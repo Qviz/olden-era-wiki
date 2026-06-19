@@ -211,6 +211,8 @@
             hp: "HP",
             speed: "SPD",
             initiative: "INT",
+            spirit: "Spirit",   // <--- ДОБАВИЛИ ДУХ
+            luck: "Luck",       // <--- ДОБАВИЛИ УДАЧУ
             abilities: "Способности", 
             image: "Image" 
         };
@@ -379,12 +381,16 @@
                                 <div class="stat"><span class="stat-label">Атака</span> <span class="stat-value">${unit[COLS.attack] || '0'}</span></div>
                                 <div class="stat"><span class="stat-label">Защита</span> <span class="stat-value">${unit[COLS.defense] || '0'}</span></div>
                                 
-                                <div class="stat"><span class="stat-label">Урон</span> <span class="stat-value">${damageRange}</span></div>
-                                <div class="stat"><span class="stat-label">Ср. урон</span> <span class="stat-value">${avgStr}</span></div>
+                                <div class="stat"><span class="stat-label">Damage</span> <span class="stat-value">${damageRange}</span></div>
+                                <div class="stat"><span class="stat-label">Av. Damage</span> <span class="stat-value">${avgStr}</span></div>
                                 
                                 <div class="stat"><span class="stat-label">Здоровье</span> <span class="stat-value">${unit[COLS.hp] || '0'}</span></div>
                                 <div class="stat"><span class="stat-label">Скорость</span> <span class="stat-value">${unit[COLS.speed] || '0'}</span></div>
+                                
                                 <div class="stat"><span class="stat-label">Инициатива</span> <span class="stat-value">${unit[COLS.initiative] || '0'}</span></div>
+                                
+                                <div class="stat"><span class="stat-label">Дух</span> <span class="stat-value">${unit[COLS.spirit] || '0'}</span></div>
+                                <div class="stat"><span class="stat-label">Удача</span> <span class="stat-value">${unit[COLS.luck] || '0'}</span></div>
                             </div>
 
                             <div class="abilities">
