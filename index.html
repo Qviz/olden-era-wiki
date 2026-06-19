@@ -235,7 +235,7 @@
                     absArray.forEach(ab => {
                         const shortIcon = ab.substring(0, 2).toUpperCase();
                         const desc = ABILITIES_DB[ab] || "Описание для этой способности еще не добавлено в код.";
-                        
+
                         abilitiesHtml += `
                             <div class="ability-icon">
                                 ${shortIcon}
@@ -248,13 +248,15 @@
                     });
                 }
 
+                // --- НОВЫЙ БЛОК ДЛЯ КАРТИНОК ---
                 let imgUrl = 'https://via.placeholder.com/300x180/221f1c/cfac4b?text=Olden+Era';
                 const imageName = unit[COLS.image];
-                
+
                 if (imageName && imageName.trim() !== '') {
-                    // Автоматически подставляем папку img/ к названию из таблицы
+                    // Принудительно добавляем 'img/' перед названием файла из таблицы
                     imgUrl = 'img/' + imageName.trim();
                 }
+                // --------------------------------
 
                 card.innerHTML = `
                     <img src="${imgUrl}" class="card-img" alt="${unit[COLS.name]}">
