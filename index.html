@@ -44,7 +44,60 @@
         select:focus, input:focus { border-color: var(--gold); box-shadow: 0 0 8px rgba(207, 172, 75, 0.3); }
 
         /* Сетка карточек */
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 30px; max-width: 1200px; margin: 0 auto; }
+        /* Контейнер для всех тиров */
+        #unitsGrid {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Секция одного конкретного тира (Ряд) */
+        .tier-section {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        /* Блок с огромной цифрой слева */
+        .tier-label-container {
+            flex: 0 0 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-right: 2px solid var(--border-color);
+            padding-right: 30px;
+        }
+
+        .tier-label {
+            font-family: 'Cinzel', serif;
+            font-size: 80px;
+            color: var(--gold);
+            text-shadow: 0 0 20px rgba(207, 172, 75, 0.4);
+            line-height: 1;
+        }
+
+        /* Сетка карточек справа от цифры */
+        .tier-cards {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        /* Делаем так, чтобы на мобильных телефонах цифра была сверху, а не сбоку */
+        @media (max-width: 768px) {
+            .tier-section {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .tier-label-container {
+                flex: auto;
+                border-right: none;
+                border-bottom: 2px solid var(--border-color);
+                padding-right: 0;
+                padding-bottom: 15px;
+            }
+        }
         .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.6); transition: all 0.3s ease; display: flex; flex-direction: column; position: relative; }
         .card:hover { transform: translateY(-5px); border-color: var(--gold); box-shadow: 0 15px 30px rgba(207, 172, 75, 0.15); }
         .card-img {
@@ -225,12 +278,14 @@
 
         // Отрисовка карточек
         function renderCards() {
-            const grid = document.getElementById('unitsGrid');
-            grid.innerHTML = '';
+            const gridContainer = document.getElementById('unitsGrid');
+            gridContainer.innerHTML = '';
+            gridContainer.className = ''; // убираем старый класс grid
 
             const searchQuery = document.getElementById('searchInput').value.toLowerCase();
             const tierFilter = document.getElementById('tierFilter').value;
 
+            // 1. Сначала фильтруем всех нужных существ
             const filteredUnits = allUnits.filter(unit => {
                 const name = (unit[COLS.name] || '').toLowerCase();
                 const tier = (unit[COLS.tier] || '').toString().trim();
@@ -242,67 +297,92 @@
             });
 
             if (filteredUnits.length === 0) {
-                grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1; color: #8c8273;">Существа не найдены.</p>';
+                gridContainer.innerHTML = '<p style="text-align:center; color: #8c8273;">Существа не найдены.</p>';
                 return;
             }
 
+            // 2. Группируем отфильтрованных существ по Тирам (уровням)
+            const unitsByTier = {};
             filteredUnits.forEach(unit => {
-                const card = document.createElement('div');
-                card.className = 'card';
+                const t = (unit[COLS.tier] || '?').toString().trim();
+                if (!unitsByTier[t]) unitsByTier[t] = [];
+                unitsByTier[t].push(unit);
+            });
 
-                let abilitiesHtml = '';
-                const absStr = unit[COLS.abilities];
-                if (absStr) {
-                    const absArray = absStr.split(',').map(s => s.trim()).filter(s => s);
-                    absArray.forEach(ab => {
-                        const shortIcon = ab.substring(0, 2).toUpperCase();
-                        const desc = ABILITIES_DB[ab] || "Описание для этой способности еще не добавлено в код.";
+            // 3. Сортируем уровни по порядку (1, 2, 3...)
+            const sortedTiers = Object.keys(unitsByTier).sort((a, b) => parseInt(a) - parseInt(b));
 
-                        abilitiesHtml += `
-                            <div class="ability-icon">
-                                ${shortIcon}
-                                <div class="tooltip">
-                                    <b>${ab}</b>
-                                    ${desc}
+            // 4. Отрисовываем каждый ряд (каждый Тир)
+            sortedTiers.forEach(tier => {
+                // Создаем ряд
+                const tierSection = document.createElement('div');
+                tierSection.className = 'tier-section';
+
+                // Создаем левый блок с большой цифрой
+                const labelContainer = document.createElement('div');
+                labelContainer.className = 'tier-label-container';
+                labelContainer.innerHTML = `<div class="tier-label">${tier}</div>`;
+                tierSection.appendChild(labelContainer);
+
+                // Создаем правый блок (сетку для карточек этого уровня)
+                const tierCards = document.createElement('div');
+                tierCards.className = 'tier-cards';
+
+                // Добавляем карточки в этот ряд
+                unitsByTier[tier].forEach(unit => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+
+                    let abilitiesHtml = '';
+                    const absStr = unit[COLS.abilities];
+                    if (absStr) {
+                        const absArray = absStr.split(',').map(s => s.trim()).filter(s => s);
+                        absArray.forEach(ab => {
+                            const shortIcon = ab.substring(0, 2).toUpperCase();
+                            const desc = ABILITIES_DB[ab] || "Описание отсутствует.";
+                            abilitiesHtml += `
+                                <div class="ability-icon">
+                                    ${shortIcon}
+                                    <div class="tooltip"><b>${ab}</b>${desc}</div>
                                 </div>
+                            `;
+                        });
+                    }
+
+                    // Формируем путь к картинке
+                    let imgUrl = 'https://via.placeholder.com/300x180/221f1c/cfac4b?text=Olden+Era';
+                    const imageName = unit[COLS.image];
+                    if (imageName && imageName.trim() !== '') {
+                        imgUrl = 'img/' + imageName.trim();
+                    }
+
+                    // Формируем саму карточку (Тир отсюда полностью убран!)
+                    card.innerHTML = `
+                        <img src="${imgUrl}" class="card-img" alt="${unit[COLS.name]}">
+                        <div class="card-content">
+                            <h2 class="card-title">${unit[COLS.name] || 'Без названия'}</h2>
+                            <div class="card-subtitle">${currentSheet}</div>
+                            
+                            <div class="stats-grid">
+                                <div class="stat"><span class="stat-label">Атака</span> <span class="stat-value">${unit[COLS.attack] || '0'}</span></div>
+                                <div class="stat"><span class="stat-label">Защита</span> <span class="stat-value">${unit[COLS.defense] || '0'}</span></div>
+                                <div class="stat"><span class="stat-label">Урон</span> <span class="stat-value">${unit[COLS.damage] || '0'}</span></div>
+                                <div class="stat"><span class="stat-label">Здоровье</span> <span class="stat-value">${unit[COLS.hp] || '0'}</span></div>
+                                <div class="stat"><span class="stat-label">Скорость</span> <span class="stat-value">${unit[COLS.speed] || '0'}</span></div>
+                                <div class="stat"><span class="stat-label">Инициатива</span> <span class="stat-value">${unit[COLS.initiative] || '0'}</span></div>
                             </div>
-                        `;
-                    });
-                }
 
-                // --- НОВЫЙ БЛОК ДЛЯ КАРТИНОК ---
-                let imgUrl = 'https://via.placeholder.com/300x180/221f1c/cfac4b?text=Olden+Era';
-                const imageName = unit[COLS.image];
-
-                if (imageName && imageName.trim() !== '') {
-                    // Принудительно добавляем 'img/' перед названием файла из таблицы
-                    imgUrl = 'img/' + imageName.trim();
-                }
-                // --------------------------------
-
-                card.innerHTML = `
-                    <div class="tier-badge" title="Тир существа">${unit[COLS.tier] || '?'}</div>
-                    <img src="${imgUrl}" class="card-img" alt="${unit[COLS.name]}">
-                    <div class="card-content">
-                        <h2 class="card-title">${unit[COLS.name] || 'Без названия'}</h2>
-                        <div class="card-subtitle">${currentSheet}</div>
-                        
-                        <div class="stats-grid">
-                            <div class="stat"><span class="stat-label">Атака</span> <span class="stat-value">${unit[COLS.attack] || '0'}</span></div>
-                            <div class="stat"><span class="stat-label">Защита</span> <span class="stat-value">${unit[COLS.defense] || '0'}</span></div>
-                            <div class="stat"><span class="stat-label">Урон</span> <span class="stat-value">${unit[COLS.damage] || '0'}</span></div>
-                            <div class="stat"><span class="stat-label">Здоровье</span> <span class="stat-value">${unit[COLS.hp] || '0'}</span></div>
-                            <div class="stat"><span class="stat-label">Скорость</span> <span class="stat-value">${unit[COLS.speed] || '0'}</span></div>
-                            <div class="stat"><span class="stat-label">Инициатива</span> <span class="stat-value">${unit[COLS.initiative] || '0'}</span></div>
+                            <div class="abilities">
+                                ${abilitiesHtml}
+                            </div>
                         </div>
+                    `;
 
-                        <div class="abilities">
-                            ${abilitiesHtml}
-                        </div>
-                    </div>
-                `;
+                    tierCards.appendChild(card);
+                });
 
-                grid.appendChild(card);
+                tierSection.appendChild(tierCards);
+                gridContainer.appendChild(tierSection);
             });
         }
 
