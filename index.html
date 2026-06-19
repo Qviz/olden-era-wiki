@@ -153,31 +153,43 @@
             loadData();
         }
 
-        // Загрузка данных
+        // ВАЖНО: Впишите сюда правильные цифры (gid) из адресной строки для каждой вкладки
+        const SHEET_GIDS = {
+            'Храм': '1574946628',               // Замените, если Храм не 0
+            'Некрополь': '1532107472',    // ЗАМЕНИТЕ ЭТИ ЦИФРЫ
+            'Подземелье': '973161914',   // ЗАМЕНИТЕ ЭТИ ЦИФРЫ
+            'Рой': '1790457249',          // ЗАМЕНИТЕ ЭТИ ЦИФРЫ
+            'Роща': '104507128',         // ЗАМЕНИТЕ ЭТИ ЦИФРЫ
+            'Раскол': '283333248',       // ЗАМЕНИТЕ ЭТИ ЦИФРЫ
+            'Нейтралы': '362503447'      // ЗАМЕНИТЕ ЭТИ ЦИФРЫ
+        };
+
+        // Загрузка данных прямым скачиванием (без багов Google)
         function loadData() {
             document.getElementById('loading').style.display = 'block';
             document.getElementById('unitsGrid').innerHTML = '';
             document.getElementById('error').innerText = '';
 
-            // Прямое обращение по названию вкладки (идеально для GitHub Pages)
-            const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodeURIComponent(currentSheet)}`;
+            const gid = SHEET_GIDS[currentSheet];
+            // Идеальная ссылка, которая отдает данные байт в байт без искажений
+            const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`;
 
             Papa.parse(csvUrl, {
                 download: true,
                 header: true,
                 skipEmptyLines: true,
-                complete: function(results) {
+                complete: function (results) {
                     document.getElementById('loading').style.display = 'none';
                     if (results.data && results.data.length > 0) {
                         allUnits = results.data;
                         renderCards();
                     } else {
-                        document.getElementById('error').innerHTML = `Вкладка "${currentSheet}" не найдена или пуста.`;
+                        document.getElementById('error').innerHTML = `Вкладка пуста.`;
                     }
                 },
-                error: function(err) {
+                error: function (err) {
                     document.getElementById('loading').style.display = 'none';
-                    document.getElementById('error').innerHTML = `Ошибка подключения: ${err.message}. Убедитесь, что таблица доступна для всех в интернете.`;
+                    document.getElementById('error').innerHTML = `Ошибка подключения: ${err.message}`;
                 }
             });
         }
