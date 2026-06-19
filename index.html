@@ -160,7 +160,7 @@
             document.getElementById('error').innerText = '';
 
             // Прямое обращение по названию вкладки (идеально для GitHub Pages)
-            const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(currentSheet)}`;
+            const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodeURIComponent(currentSheet)}`;
 
             Papa.parse(csvUrl, {
                 download: true,
