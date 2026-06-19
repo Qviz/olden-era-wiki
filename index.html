@@ -248,7 +248,13 @@
                     });
                 }
 
-                const imgUrl = unit[COLS.image] || 'https://via.placeholder.com/300x180/221f1c/cfac4b?text=Olden+Era';
+                let imgUrl = 'https://via.placeholder.com/300x180/221f1c/cfac4b?text=Olden+Era';
+                const imageName = unit[COLS.image];
+                
+                if (imageName && imageName.trim() !== '') {
+                    // Автоматически подставляем папку img/ к названию из таблицы
+                    imgUrl = 'img/' + imageName.trim();
+                }
 
                 card.innerHTML = `
                     <img src="${imgUrl}" class="card-img" alt="${unit[COLS.name]}">
