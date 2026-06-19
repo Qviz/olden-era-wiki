@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Olden Era - Справочник Юнитов</title>
+    <!-- Подключаем библиотеку PapaParse для чтения Google Таблицы -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #141414;
+            --card-bg: #221f1c;
+            --text-main: #e6ded0;
+            --gold: #cfac4b;
+            --border-color: #42382e;
+            --tooltip-bg: #0d0c0b;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-image: radial-gradient(circle at center, #26211c 0%, #0d0b0a 100%);
+            min-height: 100vh;
+        }
+
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { font-family: 'Cinzel', serif; color: var(--gold); font-size: 36px; margin: 0 0 10px 0; letter-spacing: 2px; }
+        .header p { color: #a39885; margin: 0; font-size: 16px; }
+
+        /* Вкладки фракций */
+        .tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; max-width: 1000px; margin-left: auto; margin-right: auto; }
+        .tab-btn { padding: 10px 18px; background: #2d2620; border: 1px solid var(--border-color); color: #b5a894; cursor: pointer; font-family: 'Cinzel', serif; font-size: 14px; font-weight: bold; border-radius: 4px; transition: all 0.2s ease; }
+        .tab-btn:hover { border-color: var(--gold); color: #fff; }
+        .tab-btn.active { background: var(--gold); color: #141414; border-color: var(--gold); box-shadow: 0 0 12px rgba(207, 172, 75, 0.4); }
+
+        /* Фильтры и поиск */
+        .controls { display: flex; justify-content: center; gap: 15px; margin-bottom: 40px; flex-wrap: wrap; }
+        select, input { padding: 12px 20px; background: #1c1916; border: 1px solid var(--border-color); color: var(--text-main); font-family: 'Montserrat', sans-serif; font-size: 15px; border-radius: 4px; outline: none; transition: all 0.2s; }
+        select:focus, input:focus { border-color: var(--gold); box-shadow: 0 0 8px rgba(207, 172, 75, 0.3); }
+
+        /* Сетка карточек */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 30px; max-width: 1200px; margin: 0 auto; }
+        .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.6); transition: all 0.3s ease; display: flex; flex-direction: column; position: relative; }
+        .card:hover { transform: translateY(-5px); border-color: var(--gold); box-shadow: 0 15px 30px rgba(207, 172, 75, 0.15); }
+        .card-img { width: 100%; height: 180px; background-color: #111; object-fit: cover; border-bottom: 1px solid var(--border-color); }
+        .card-content { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
+        .card-title { font-family: 'Cinzel', serif; font-size: 22px; color: var(--gold); margin: 0 0 5px 0; text-align: center; }
+        .card-subtitle { text-align: center; font-size: 13px; color: #8c8273; margin-bottom: 18px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+
+        /* Сетка параметров */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px; margin-bottom: 20px; }
+        .stat { display: flex; justify-content: space-between; background: rgba(0, 0, 0, 0.25); padding: 6px 10px; border-radius: 4px; border: 1px solid #2d2722; }
+        .stat-label { color: #9c9180; }
+        .stat-value { font-weight: 700; color: #fff; }
+
+        /* Блок способностей */
+        .abilities { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: auto; padding-top: 15px; border-top: 1px dashed var(--border-color); }
+        .ability-icon { width: 38px; height: 38px; background: #362e27; border: 1px solid var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: help; position: relative; font-weight: 700; font-size: 11px; color: #fff; user-select: none; box-shadow: 0 2px 5px rgba(0,0,0,0.4); transition: background 0.2s; }
+        .ability-icon:hover { background: #473d34; }
+
+        /* Всплывающая подсказка (Tooltip) */
+        .tooltip { visibility: hidden; width: 240px; background-color: var(--tooltip-bg); color: #e6ded0; text-align: left; border-radius: 6px; padding: 12px; position: absolute; z-index: 999; bottom: 130%; left: 50%; transform: translateX(-50%); border: 1px solid var(--gold); box-shadow: 0 5px 15px rgba(0,0,0,0.9); opacity: 0; transition: opacity 0.2s ease, transform 0.2s ease; font-size: 13px; font-family: 'Montserrat', sans-serif; font-weight: normal; line-height: 1.4; pointer-events: none; }
+        .tooltip b { color: var(--gold); font-size: 14px; display: block; margin-bottom: 4px; font-family: 'Cinzel', serif; }
+        .tooltip::after { content: ""; position: absolute; top: 100%; left: 50%; margin-left: -6px; border-width: 6px; border-style: solid; border-color: var(--gold) transparent transparent transparent; }
+        .ability-icon:hover .tooltip { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(-2px); }
+
+        .loading { text-align: center; font-size: 20px; color: var(--gold); margin-top: 50px; font-family: 'Cinzel', serif; }
+        .error { color: #ff4d4d; text-align: center; margin-top: 20px; max-width: 600px; margin-left: auto; margin-right: auto; line-height: 1.5; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Olden Era: Энциклопедия Существ</h1>
+        <p>Интерактивный справочник по юнитам</p>
+    </div>
+
+    <!-- Вкладки фракций -->
+    <div class="tabs" id="tabsContainer">
+        <button class="tab-btn active" onclick="switchTab('Храм')">Храм</button>
+        <button class="tab-btn" onclick="switchTab('Некрополь')">Некрополь</button>
+        <button class="tab-btn" onclick="switchTab('Подземелье')">Подземелье</button>
+        <button class="tab-btn" onclick="switchTab('Рой')">Рой</button>
+        <button class="tab-btn" onclick="switchTab('Роща')">Роща</button>
+        <button class="tab-btn" onclick="switchTab('Раскол')">Раскол</button>
+        <button class="tab-btn" onclick="switchTab('Нейтралы')">Нейтралы</button>
+    </div>
+
+    <!-- Поиск и фильтр по уровням -->
+    <div class="controls">
+        <input type="text" id="searchInput" placeholder="Поиск юнита по названию..." oninput="renderCards()">
+        <select id="tierFilter" onchange="renderCards()">
+            <option value="all">Все уровни (Тиры)</option>
+            <option value="1">Тир 1</option>
+            <option value="2">Тир 2</option>
+            <option value="3">Тир 3</option>
+            <option value="4">Тир 4</option>
+            <option value="5">Тир 5</option>
+            <option value="6">Тир 6</option>
+            <option value="7">Тир 7</option>
+        </select>
+    </div>
+
+    <div id="loading" class="loading">Загрузка данных из Google Таблицы...</div>
+    <div id="error" class="error"></div>
+    
+    <!-- Сетка с существами -->
+    <div class="grid" id="unitsGrid"></div>
+
+    <script>
+        // ID вашей открытой таблицы
+        const SHEET_ID = '1lTJftJX6YN6DgdnrgKmXFR7mCEePtLYxb_fNe37jksA';
+        let currentSheet = 'Храм'; 
+        let allUnits = [];
+
+        // Названия колонок из таблицы
+        const COLS = {
+            name: "Название",
+            tier: "Уровень",
+            attack: "Атака",
+            defense: "Защита",
+            damage: "Урон",
+            hp: "Здоровье",
+            speed: "Скорость",
+            initiative: "Инициатива",
+            abilities: "Способности", 
+            image: "Картинка" 
+        };
+
+        // База описаний способностей
+        const ABILITIES_DB = {
+            "Полет": "Существо игнорирует препятствия при перемещении по полю боя.",
+            "Стрелок": "Атакует на расстоянии. Теряет половину урона в ближнем бою.",
+            "Нежить": "Иммунитет к эффектам разума и боевого духа. Нельзя воскресить живой магией.",
+            "Безответная атака": "Враг не наносит ответный удар после атаки этого существа.",
+            "Двойной удар": "Наносит два удара за одну атаку.",
+            "Большое существо": "Занимает на поле боя клетку размером 2х2."
+        };
+
+        // Переключение вкладок
+        function switchTab(sheetName) {
+            currentSheet = sheetName;
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => {
+                if(btn.innerText === sheetName) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+            loadData();
+        }
+
+        // Загрузка данных
+        function loadData() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('unitsGrid').innerHTML = '';
+            document.getElementById('error').innerText = '';
+
+            // Прямое обращение по названию вкладки (идеально для GitHub Pages)
+            const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(currentSheet)}`;
+
+            Papa.parse(csvUrl, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    document.getElementById('loading').style.display = 'none';
+                    if (results.data && results.data.length > 0) {
+                        allUnits = results.data;
+                        renderCards();
+                    } else {
+                        document.getElementById('error').innerHTML = `Вкладка "${currentSheet}" не найдена или пуста.`;
+                    }
+                },
+                error: function(err) {
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('error').innerHTML = `Ошибка подключения: ${err.message}. Убедитесь, что таблица доступна для всех в интернете.`;
+                }
+            });
+        }
+
+        // Отрисовка карточек
+        function renderCards() {
+            const grid = document.getElementById('unitsGrid');
+            grid.innerHTML = '';
+
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            const tierFilter = document.getElementById('tierFilter').value;
+
+            const filteredUnits = allUnits.filter(unit => {
+                const name = (unit[COLS.name] || '').toLowerCase();
+                const tier = (unit[COLS.tier] || '').toString().trim();
+
+                const matchesSearch = name.includes(searchQuery);
+                const matchesTier = tierFilter === 'all' || tier === tierFilter;
+
+                return matchesSearch && matchesTier && name.length > 0;
+            });
+
+            if (filteredUnits.length === 0) {
+                grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1; color: #8c8273;">Существа не найдены.</p>';
+                return;
+            }
+
+            filteredUnits.forEach(unit => {
+                const card = document.createElement('div');
+                card.className = 'card';
+
+                let abilitiesHtml = '';
+                const absStr = unit[COLS.abilities];
+                if (absStr) {
+                    const absArray = absStr.split(',').map(s => s.trim()).filter(s => s);
+                    absArray.forEach(ab => {
+                        const shortIcon = ab.substring(0, 2).toUpperCase();
+                        const desc = ABILITIES_DB[ab] || "Описание для этой способности еще не добавлено в код.";
+                        
+                        abilitiesHtml += `
+                            <div class="ability-icon">
+                                ${shortIcon}
+                                <div class="tooltip">
+                                    <b>${ab}</b>
+                                    ${desc}
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+
+                const imgUrl = unit[COLS.image] || 'https://via.placeholder.com/300x180/221f1c/cfac4b?text=Olden+Era';
+
+                card.innerHTML = `
+                    <img src="${imgUrl}" class="card-img" alt="${unit[COLS.name]}">
+                    <div class="card-content">
+                        <h2 class="card-title">${unit[COLS.name] || 'Без названия'}</h2>
+                        <div class="card-subtitle">Тир ${unit[COLS.tier] || '?'} • ${currentSheet}</div>
+                        
+                        <div class="stats-grid">
+                            <div class="stat"><span class="stat-label">Атака</span> <span class="stat-value">${unit[COLS.attack] || '0'}</span></div>
+                            <div class="stat"><span class="stat-label">Защита</span> <span class="stat-value">${unit[COLS.defense] || '0'}</span></div>
+                            <div class="stat"><span class="stat-label">Урон</span> <span class="stat-value">${unit[COLS.damage] || '0'}</span></div>
+                            <div class="stat"><span class="stat-label">Здоровье</span> <span class="stat-value">${unit[COLS.hp] || '0'}</span></div>
+                            <div class="stat"><span class="stat-label">Скорость</span> <span class="stat-value">${unit[COLS.speed] || '0'}</span></div>
+                            <div class="stat"><span class="stat-label">Инициатива</span> <span class="stat-value">${unit[COLS.initiative] || '0'}</span></div>
+                        </div>
+
+                        <div class="abilities">
+                            ${abilitiesHtml}
+                        </div>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        window.onload = loadData;
+    </script>
+</body>
+</html>
