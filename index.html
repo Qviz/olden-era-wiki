@@ -399,22 +399,25 @@
 
                     // Формируем саму карточку
                     // Формируем саму карточку с новым дизайном (Сплит картинки и статов)
+                    // Формируем саму карточку с обновленным дизайном
                     card.innerHTML = `
+                        <div style="padding: 12px 10px; background-color: #1c1a18; border-bottom: 1px solid var(--border-color);">
+                            <h2 class="card-title" style="margin: 0; font-size: 20px;">${unit[COLS.name] || 'Без названия'}</h2>
+                        </div>
+
                         <div class="card-top-section">
                             <div class="card-img-container">
                                 <img src="${imgUrl}" class="card-img-half" alt="${unit[COLS.name]}">
                             </div>
                             <div class="card-side-stats">
-                                <div class="stat"><span class="stat-label">Damage</span> <span class="stat-value">${damageRange}</span></div>
-                                <div class="stat"><span class="stat-label">Здоровье</span> <span class="stat-value">${unit[COLS.hp] || '0'}</span></div>
-                                <div class="stat"><span class="stat-label">Скорость</span> <span class="stat-value">${unit[COLS.speed] || '0'}</span></div>
-                                <div class="stat"><span class="stat-label">Инициатива</span> <span class="stat-value">${unit[COLS.initiative] || '0'}</span></div>
+                                <div class="stat"><span class="stat-label">HP</span> <span class="stat-value">${unit[COLS.hp] || '0'}</span></div>
+                                <div class="stat"><span class="stat-label">DMG</span> <span class="stat-value">${damageRange}</span></div>
+                                <div class="stat"><span class="stat-label">INT</span> <span class="stat-value">${unit[COLS.initiative] || '0'}</span></div>
+                                <div class="stat"><span class="stat-label">SPD</span> <span class="stat-value">${unit[COLS.speed] || '0'}</span></div>
                             </div>
                         </div>
                         
                         <div class="card-content">
-                            <h2 class="card-title">${unit[COLS.name] || 'Без названия'}</h2>
-                            
                             <div class="stats-grid">
                                 <div class="stat"><span class="stat-label">Атака</span> <span class="stat-value">${unit[COLS.attack] || '0'}</span></div>
                                 <div class="stat"><span class="stat-label">Защита</span> <span class="stat-value">${unit[COLS.defense] || '0'}</span></div>
@@ -422,7 +425,8 @@
                                 <div class="stat"><span class="stat-label">Av. Damage</span> <span class="stat-value">${avgStr}</span></div>
                                 <div class="stat"><span class="stat-label">Дух</span> <span class="stat-value">${unit[COLS.spirit] || '0'}</span></div>
                                 
-                                <div class="stat" style="grid-column: 1 / -1;"><span class="stat-label">Удача</span> <span class="stat-value">${unit[COLS.luck] || '0'}</span></div>
+                                <div class="stat"><span class="stat-label">Удача</span> <span class="stat-value">${unit[COLS.luck] || '0'}</span></div>
+                                <div class="stat"><span class="stat-label">Новый</span> <span class="stat-value">-</span></div>
                             </div>
 
                             <div class="abilities">
