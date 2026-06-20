@@ -37,7 +37,7 @@
         .tier-label { font-family: 'Cinzel', serif; font-size: 80px; color: var(--gold); text-shadow: 0 0 20px rgba(207, 172, 75, 0.4); line-height: 1; }
         .tier-cards { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; }
 
-        .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.6); transition: all 0.3s ease; display: flex; flex-direction: column; }
+        .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; box-shadow: 0 10px 20px rgba(0,0,0,0.6); transition: all 0.3s ease; display: flex; flex-direction: column; }
         .card:hover { transform: translateY(-5px); border-color: var(--gold); box-shadow: 0 15px 30px rgba(207, 172, 75, 0.15); }
         
         .card-top-section { display: flex; background-color: #111; border-bottom: 1px solid var(--border-color); height: 180px; }
@@ -55,12 +55,8 @@
 
         /* ИКОНКИ СПОСОБНОСТЕЙ И НАВЫКОВ */
         .skills-container { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: auto; padding-top: 15px; border-top: 1px dashed var(--border-color); }
-        .skill-icon { width: 42px; height: 42px; background: #362e27; border: 2px solid var(--gold); position: relative; display: flex; align-items: center; justify-content: center; cursor: help; color: #fff; font-size: 11px; font-weight: bold; text-align: center; line-height: 1; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
-        /* Перенесли скругление (border-radius: inherit) прямо на картинку */
-        .skill-icon img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
-        /* Убрали overflow: hidden, чтобы тултипы могли свободно "вылезать" за пределы иконки */
-        .skill-icon.round { border-radius: 50%; } 
-        .skill-icon.square { border-radius: 8px; }
+        .skill-icon { width: 42px; height: 42px; position: relative; display: flex; align-items: center; justify-content: center; cursor: help; color: #fff; font-size: 11px; font-weight: bold; text-align: center; line-height: 1; }
+        .skill-icon img { width: 100%; height: 100%; object-fit: contain; }
         
         /* ВСПЛЫВАЮЩЕЕ ОКНО (TOOLTIP) */
         .tooltip { visibility: hidden; width: 260px; background-color: var(--tooltip-bg); color: #e6ded0; text-align: left; border-radius: 6px; padding: 15px; position: absolute; z-index: 999; bottom: 130%; left: 50%; transform: translateX(-50%); border: 1px solid var(--gold); box-shadow: 0 8px 20px rgba(0,0,0,0.9); opacity: 0; transition: opacity 0.2s ease, transform 0.2s ease; font-size: 13px; font-family: 'Montserrat', sans-serif; font-weight: normal; line-height: 1.4; pointer-events: none; }
@@ -201,41 +197,42 @@
             }
         }
 
-        // Функция-генератор иконок
-        function generateIconHtml(namesStr, database, folder, isRound) {
+        // Функция-генератор иконок (теперь поддерживает стоимость)
+        function generateIconHtml(namesStr, database, folder) {
             if (!namesStr || namesStr.trim() === '') return '';
             
             let html = '';
             const names = namesStr.split(',').map(s => s.trim()).filter(s => s);
-            const shapeClass = isRound ? 'round' : 'square';
 
             names.forEach(name => {
                 const data = database[name];
                 
                 if (data) {
-                    // Нашли в базе: формируем картинку и попап
                     const iconPath = `img/${folder}/${data.Icon}`;
                     const limitation = (data.Limitation && data.Limitation.trim() !== '') ? `<span class="limitation">${data.Limitation}</span>` : '';
                     
+                    // Если у навыка есть Стоимость (Cost), добавляем синюю строчку
+                    const cost = (data.Cost && data.Cost.trim() !== '') ? `<span style="color: #6bc2ff; font-size: 12px; display: block; margin-bottom: 6px; font-weight: 600;">Стоимость: ${data.Cost}</span>` : '';
+                    
                     html += `
-                        <div class="skill-icon ${shapeClass}">
+                        <div class="skill-icon">
                             <img src="${iconPath}" alt="${name}">
                             <div class="tooltip">
                                 <b>${name}</b>
+                                ${cost}
                                 <p>${data.Text}</p>
                                 ${limitation}
                             </div>
                         </div>
                     `;
                 } else {
-                    // Не нашли в базе: выводим красную заглушку с текстом, чтобы вы заметили опечатку
                     const short = name.substring(0, 3).toUpperCase();
                     html += `
-                        <div class="skill-icon ${shapeClass}" style="border-color: red;">
+                        <div class="skill-icon" style="border: 2px solid red; background: #333;">
                             ${short}
                             <div class="tooltip">
                                 <b style="color: red;">${name}</b>
-                                <p>Описание не найдено в справочнике. Проверьте опечатку в таблице.</p>
+                                <p>Описание не найдено в справочнике.</p>
                             </div>
                         </div>
                     `;
@@ -290,11 +287,10 @@
                     card.className = 'card';
 
                     // --- ГЕНЕРАЦИЯ ИКОНОК ---
-                    // Активные скиллы (КВАДРАТНЫЕ, из папки img/skills)
-                    const skillsHtml = generateIconHtml(unit[COLS.skills], dbSkills, 'skills', false);
-                    
-                    // Пассивные навыки (КРУГЛЫЕ, из папки img/abilities)
-                    const abilitiesHtml = generateIconHtml(unit[COLS.abilities], dbAbilities, 'abilities', true);
+                    // Пассивные навыки (теперь идут ПЕРВЫМИ)
+                    const abilitiesHtml = generateIconHtml(unit[COLS.abilities], dbAbilities, 'abilities');
+                    // Активные скиллы (идут ВТОРЫМИ)
+                    const skillsHtml = generateIconHtml(unit[COLS.skills], dbSkills, 'skills');
                     // ------------------------
 
                     let imgUrl = 'https://via.placeholder.com/300x180/221f1c/cfac4b?text=Olden+Era';
@@ -310,7 +306,7 @@
                     let damageRange = (minD === maxD) ? minD : `${minD}-${maxD}`;
 
                     card.innerHTML = `
-                        <div style="padding: 12px 10px; background-color: #1c1a18; border-bottom: 1px solid var(--border-color);">
+                        <div style="padding: 12px 10px; background-color: #1c1a18; border-bottom: 1px solid var(--border-color); border-radius: 5px 5px 0 0;">
                             <h2 class="card-title" style="margin: 0; font-size: 20px; text-align: center;">${unit[COLS.name] || 'Без названия'}</h2>
                         </div>
 
@@ -339,8 +335,8 @@
                             </div>
 
                             <div class="skills-container">
-                                ${skillsHtml}
                                 ${abilitiesHtml}
+                                ${skillsHtml}
                             </div>
                         </div>
                     `;
