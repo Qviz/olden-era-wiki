@@ -299,10 +299,9 @@
                         imgUrl = 'img/' + imageName.trim();
                     }
 
+                    // Считаем только разброс урона (средний урон убрали)
                     let minD = parseInt(unit[COLS.damageMin]) || 0;
                     let maxD = parseInt(unit[COLS.damageMax]) || 0;
-                    let avgD = (minD + maxD) / 2;
-                    let avgStr = Number.isInteger(avgD) ? avgD : avgD.toFixed(1); 
                     let damageRange = (minD === maxD) ? minD : `${minD}-${maxD}`;
 
                     card.innerHTML = `
@@ -327,11 +326,8 @@
                                 <div class="stat"><span class="stat-label">Атака</span> <span class="stat-value">${unit[COLS.attack] || '0'}</span></div>
                                 <div class="stat"><span class="stat-label">Защита</span> <span class="stat-value">${unit[COLS.defense] || '0'}</span></div>
                                 
-                                <div class="stat"><span class="stat-label">Av. Damage</span> <span class="stat-value">${avgStr}</span></div>
                                 <div class="stat"><span class="stat-label">Дух</span> <span class="stat-value">${unit[COLS.spirit] || '0'}</span></div>
-                                
                                 <div class="stat"><span class="stat-label">Удача</span> <span class="stat-value">${unit[COLS.luck] || '0'}</span></div>
-                                <div class="stat"><span class="stat-label">Новый</span> <span class="stat-value">-</span></div>
                             </div>
 
                             <div class="skills-container">
