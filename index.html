@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Olden Era - Справочник Юнитов</title>
-    <!-- Подключаем библиотеку PapaParse для чтения Google Таблицы -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     
@@ -18,190 +17,84 @@
             --tooltip-bg: #0d0c0b;
         }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: 'Montserrat', sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-image: radial-gradient(circle at center, #26211c 0%, #0d0b0a 100%);
-            min-height: 100vh;
-        }
-
+        body { background-color: var(--bg-color); color: var(--text-main); font-family: 'Montserrat', sans-serif; margin: 0; padding: 20px; background-image: radial-gradient(circle at center, #26211c 0%, #0d0b0a 100%); min-height: 100vh; }
         .header { text-align: center; margin-bottom: 30px; }
         .header h1 { font-family: 'Cinzel', serif; color: var(--gold); font-size: 36px; margin: 0 0 10px 0; letter-spacing: 2px; }
         .header p { color: #a39885; margin: 0; font-size: 16px; }
 
-        /* Вкладки фракций */
-        .tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; max-width: 1000px; margin-left: auto; margin-right: auto; }
+        .tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; max-width: 1000px; margin: 0 auto; }
         .tab-btn { padding: 10px 18px; background: #2d2620; border: 1px solid var(--border-color); color: #b5a894; cursor: pointer; font-family: 'Cinzel', serif; font-size: 14px; font-weight: bold; border-radius: 4px; transition: all 0.2s ease; }
         .tab-btn:hover { border-color: var(--gold); color: #fff; }
         .tab-btn.active { background: var(--gold); color: #141414; border-color: var(--gold); box-shadow: 0 0 12px rgba(207, 172, 75, 0.4); }
 
-        /* Фильтры и поиск */
         .controls { display: flex; justify-content: center; gap: 15px; margin-bottom: 40px; flex-wrap: wrap; }
         select, input { padding: 12px 20px; background: #1c1916; border: 1px solid var(--border-color); color: var(--text-main); font-family: 'Montserrat', sans-serif; font-size: 15px; border-radius: 4px; outline: none; transition: all 0.2s; }
         select:focus, input:focus { border-color: var(--gold); box-shadow: 0 0 8px rgba(207, 172, 75, 0.3); }
 
-        /* Сетка карточек */
-        /* Контейнер для всех тиров */
-        #unitsGrid {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+        #unitsGrid { max-width: 1200px; margin: 0 auto; }
+        .tier-section { display: flex; gap: 30px; margin-bottom: 60px; }
+        .tier-label-container { flex: 0 0 80px; display: flex; align-items: center; justify-content: center; border-right: 2px solid var(--border-color); padding-right: 30px; }
+        .tier-label { font-family: 'Cinzel', serif; font-size: 80px; color: var(--gold); text-shadow: 0 0 20px rgba(207, 172, 75, 0.4); line-height: 1; }
+        .tier-cards { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; }
 
-        /* Секция одного конкретного тира (Ряд) */
-        .tier-section {
-            display: flex;
-            gap: 30px;
-            margin-bottom: 60px;
-        }
-
-        /* Блок с огромной цифрой слева */
-        .tier-label-container {
-            flex: 0 0 80px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-right: 2px solid var(--border-color);
-            padding-right: 30px;
-        }
-
-        .tier-label {
-            font-family: 'Cinzel', serif;
-            font-size: 80px;
-            color: var(--gold);
-            text-shadow: 0 0 20px rgba(207, 172, 75, 0.4);
-            line-height: 1;
-        }
-
-        /* Сетка карточек справа от цифры */
-        .tier-cards {
-            flex: 1;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 30px;
-        }
-
-        /* Делаем так, чтобы на мобильных телефонах цифра была сверху, а не сбоку */
-        @media (max-width: 768px) {
-            .tier-section {
-                flex-direction: column;
-                gap: 20px;
-            }
-
-            .tier-label-container {
-                flex: auto;
-                border-right: none;
-                border-bottom: 2px solid var(--border-color);
-                padding-right: 0;
-                padding-bottom: 15px;
-            }
-        }
-        .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.6); transition: all 0.3s ease; display: flex; flex-direction: column; position: relative; }
+        .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.6); transition: all 0.3s ease; display: flex; flex-direction: column; }
         .card:hover { transform: translateY(-5px); border-color: var(--gold); box-shadow: 0 15px 30px rgba(207, 172, 75, 0.15); }
         
-        /* --- НОВЫЙ ВЕРХНИЙ БЛОК КАРТОЧКИ (Сплит) --- */
-        .card-top-section {
-            display: flex;
-            background-color: #111;
-            border-bottom: 1px solid var(--border-color);
-            height: 180px;
-        }
-
-        /* Левая часть: Картинка */
-        .card-img-container {
-            flex: 1; /* Занимает ровно 50% ширины */
-            padding: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .card-img-half {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
-
-        /* Правая часть: Статистика рядом с картинкой */
-        .card-side-stats {
-            flex: 1; /* Занимает вторые 50% ширины */
-            padding: 15px 15px 15px 5px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 8px; /* Расстояние между плашками */
-        }
-        /* ------------------------------------------ */
+        .card-top-section { display: flex; background-color: #111; border-bottom: 1px solid var(--border-color); height: 180px; }
+        .card-img-container { flex: 1; padding: 10px; display: flex; align-items: center; justify-content: center; }
+        .card-img-half { max-width: 100%; max-height: 100%; object-fit: contain; }
         
-        /* Значок Тира (Уровня) в углу */
-        .tier-badge {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            background: linear-gradient(135deg, var(--gold) 0%, #a68427 100%);
-            color: #141414;
-            font-family: 'Cinzel', serif;
-            font-weight: bold;
-            font-size: 18px;
-            width: 38px;
-            height: 38px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            border: 2px solid #221f1c;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.8);
-            z-index: 10;
-        }
-        
+        .card-side-stats { flex: 1; padding: 15px 15px 15px 5px; display: flex; flex-direction: column; justify-content: center; gap: 8px; }
         .card-content { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
-        .card-title { font-family: 'Cinzel', serif; font-size: 22px; color: var(--gold); margin: 0 0 5px 0; text-align: center; }
-        .card-subtitle { text-align: center; font-size: 13px; color: #8c8273; margin-bottom: 18px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+        .card-title { font-family: 'Cinzel', serif; color: var(--gold); }
 
-        /* Сетка параметров */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px; margin-bottom: 20px; }
         .stat { display: flex; justify-content: space-between; background: rgba(0, 0, 0, 0.25); padding: 6px 10px; border-radius: 4px; border: 1px solid #2d2722; }
         .stat-label { color: #9c9180; }
         .stat-value { font-weight: 700; color: #fff; }
 
-        /* Блок способностей */
-        .abilities { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: auto; padding-top: 15px; border-top: 1px dashed var(--border-color); }
-        .ability-icon { width: 38px; height: 38px; background: #362e27; border: 1px solid var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: help; position: relative; font-weight: 700; font-size: 11px; color: #fff; user-select: none; box-shadow: 0 2px 5px rgba(0,0,0,0.4); transition: background 0.2s; }
-        .ability-icon:hover { background: #473d34; }
-
-        /* Всплывающая подсказка (Tooltip) */
-        .tooltip { visibility: hidden; width: 240px; background-color: var(--tooltip-bg); color: #e6ded0; text-align: left; border-radius: 6px; padding: 12px; position: absolute; z-index: 999; bottom: 130%; left: 50%; transform: translateX(-50%); border: 1px solid var(--gold); box-shadow: 0 5px 15px rgba(0,0,0,0.9); opacity: 0; transition: opacity 0.2s ease, transform 0.2s ease; font-size: 13px; font-family: 'Montserrat', sans-serif; font-weight: normal; line-height: 1.4; pointer-events: none; }
-        .tooltip b { color: var(--gold); font-size: 14px; display: block; margin-bottom: 4px; font-family: 'Cinzel', serif; }
+        /* ИКОНКИ СПОСОБНОСТЕЙ И НАВЫКОВ */
+        .skills-container { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: auto; padding-top: 15px; border-top: 1px dashed var(--border-color); }
+        .skill-icon { width: 42px; height: 42px; background: #362e27; border: 2px solid var(--gold); position: relative; display: flex; align-items: center; justify-content: center; cursor: help; color: #fff; font-size: 11px; font-weight: bold; text-align: center; line-height: 1; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
+        .skill-icon img { width: 100%; height: 100%; object-fit: cover; }
+        .skill-icon.round { border-radius: 50%; overflow: hidden; } /* Пассивки */
+        .skill-icon.square { border-radius: 8px; overflow: hidden; } /* Активки */
+        
+        /* ВСПЛЫВАЮЩЕЕ ОКНО (TOOLTIP) */
+        .tooltip { visibility: hidden; width: 260px; background-color: var(--tooltip-bg); color: #e6ded0; text-align: left; border-radius: 6px; padding: 15px; position: absolute; z-index: 999; bottom: 130%; left: 50%; transform: translateX(-50%); border: 1px solid var(--gold); box-shadow: 0 8px 20px rgba(0,0,0,0.9); opacity: 0; transition: opacity 0.2s ease, transform 0.2s ease; font-size: 13px; font-family: 'Montserrat', sans-serif; font-weight: normal; line-height: 1.4; pointer-events: none; }
+        .tooltip b { color: var(--gold); font-size: 15px; display: block; margin-bottom: 8px; font-family: 'Cinzel', serif; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .tooltip p { margin: 0; }
+        .limitation { color: #ff6b6b; font-size: 11px; margin-top: 10px; font-style: italic; border-top: 1px solid #333; padding-top: 8px; display: block; }
         .tooltip::after { content: ""; position: absolute; top: 100%; left: 50%; margin-left: -6px; border-width: 6px; border-style: solid; border-color: var(--gold) transparent transparent transparent; }
-        .ability-icon:hover .tooltip { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(-2px); }
+        .skill-icon:hover .tooltip { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(-2px); }
 
         .loading { text-align: center; font-size: 20px; color: var(--gold); margin-top: 50px; font-family: 'Cinzel', serif; }
-        .error { color: #ff4d4d; text-align: center; margin-top: 20px; max-width: 600px; margin-left: auto; margin-right: auto; line-height: 1.5; }
+        .error { color: #ff4d4d; text-align: center; margin-top: 20px; }
+
+        @media (max-width: 768px) {
+            .tier-section { flex-direction: column; gap: 20px; }
+            .tier-label-container { flex: auto; border-right: none; border-bottom: 2px solid var(--border-color); padding-right: 0; padding-bottom: 15px; }
+        }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>Olden Era: Энциклопедия Существ</h1>
-        <p>Интерактивный справочник по юнитам</p>
+        <h1>Olden Era: Энциклопедия</h1>
     </div>
 
-    <!-- Вкладки фракций -->
     <div class="tabs" id="tabsContainer">
-        <button class="tab-btn active" onclick="switchTab('Храм')">Храм</button>
+        <button class="tab-btn active" onclick="switchTab('Подземелье')">Подземелье</button>
+        <button class="tab-btn" onclick="switchTab('Храм')">Храм</button>
         <button class="tab-btn" onclick="switchTab('Некрополь')">Некрополь</button>
-        <button class="tab-btn" onclick="switchTab('Подземелье')">Подземелье</button>
         <button class="tab-btn" onclick="switchTab('Рой')">Рой</button>
         <button class="tab-btn" onclick="switchTab('Роща')">Роща</button>
         <button class="tab-btn" onclick="switchTab('Раскол')">Раскол</button>
         <button class="tab-btn" onclick="switchTab('Нейтралы')">Нейтралы</button>
     </div>
 
-    <!-- Поиск и фильтр по уровням -->
     <div class="controls">
-        <input type="text" id="searchInput" placeholder="Поиск юнита по названию..." oninput="renderCards()">
+        <input type="text" id="searchInput" placeholder="Поиск юнита..." oninput="renderCards()">
         <select id="tierFilter" onchange="renderCards()">
             <option value="all">Все уровни (Тиры)</option>
             <option value="1">Тир 1</option>
@@ -214,114 +107,153 @@
         </select>
     </div>
 
-    <div id="loading" class="loading">Загрузка данных из Google Таблицы...</div>
+    <div id="loading" class="loading">Загрузка базы данных...</div>
     <div id="error" class="error"></div>
-    
-    <!-- Сетка с существами -->
-    <div class="grid" id="unitsGrid"></div>
+    <div id="unitsGrid"></div>
 
     <script>
-        // ID вашей открытой таблицы
         const SHEET_ID = '1lTJftJX6YN6DgdnrgKmXFR7mCEePtLYxb_fNe37jksA';
-        let currentSheet = 'Храм'; 
+        let currentSheet = 'Подземелье'; 
         let allUnits = [];
+        
+        // Словари для хранения данных со справочников
+        let dbAbilities = {};
+        let dbSkills = {};
 
-        // Названия колонок из таблицы
         const COLS = {
             name: "Название RU",
             tier: "TIER",
             attack: "ATK",
             defense: "DEF",
-            damageMin: "Min", // Минимальный урон
-            damageMax: "Max", // Максимальный урон
+            damageMin: "Min",
+            damageMax: "Max",
             hp: "HP",
             speed: "SPD",
             initiative: "INT",
-            spirit: "Spirit",   // <--- ДОБАВИЛИ ДУХ
-            luck: "Luck",       // <--- ДОБАВИЛИ УДАЧУ
-            abilities: "Способности", 
+            spirit: "Spirit",
+            luck: "Luck",
+            abilities: "Abilities", // Навыки (пассивки)
+            skills: "Skills",       // Скиллы (активки)
             image: "Image" 
         };
 
-        // База описаний способностей
-        const ABILITIES_DB = {
-            "Полет": "Существо игнорирует препятствия при перемещении по полю боя.",
-            "Стрелок": "Атакует на расстоянии. Теряет половину урона в ближнем бою.",
-            "Нежить": "Иммунитет к эффектам разума и боевого духа. Нельзя воскресить живой магией.",
-            "Безответная атака": "Враг не наносит ответный удар после атаки этого существа.",
-            "Двойной удар": "Наносит два удара за одну атаку.",
-            "Большое существо": "Занимает на поле боя клетку размером 2х2."
+        // === ВНИМАНИЕ: ДОБАВЬТЕ GID ДЛЯ НОВЫХ ВКЛАДОК ===
+        const SHEET_GIDS = {
+            'Храм': '1574946628',
+            'Некрополь': '1532107472',
+            'Подземелье': '973161914',
+            'Рой': '1790457249',
+            'Роща': '104507128',
+            'Раскол': '283333248',
+            'Нейтралы': '362503447',
+            'Abilities': '1045425303', // ЗАМЕНИТЕ ЭТОТ ТЕКСТ НА ЦИФРЫ ИЗ ССЫЛКИ
+            'Skills': '1301175342'        // ЗАМЕНИТЕ ЭТОТ ТЕКСТ НА ЦИФРЫ ИЗ ССЫЛКИ
         };
 
-        // Переключение вкладок
         function switchTab(sheetName) {
             currentSheet = sheetName;
-            const buttons = document.querySelectorAll('.tab-btn');
-            buttons.forEach(btn => {
-                if(btn.innerText === sheetName) btn.classList.add('active');
-                else btn.classList.remove('active');
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.innerText === sheetName);
             });
             loadData();
         }
 
-        // ВАЖНО: Впишите сюда правильные цифры (gid) из адресной строки для каждой вкладки
-        const SHEET_GIDS = {
-            'Храм': '1574946628',               // Замените, если Храм не 0
-            'Некрополь': '1532107472',    // ЗАМЕНИТЕ ЭТИ ЦИФРЫ
-            'Подземелье': '973161914',   // ЗАМЕНИТЕ ЭТИ ЦИФРЫ
-            'Рой': '1790457249',          // ЗАМЕНИТЕ ЭТИ ЦИФРЫ
-            'Роща': '104507128',         // ЗАМЕНИТЕ ЭТИ ЦИФРЫ
-            'Раскол': '283333248',       // ЗАМЕНИТЕ ЭТИ ЦИФРЫ
-            'Нейтралы': '362503447'      // ЗАМЕНИТЕ ЭТИ ЦИФРЫ
-        };
+        // Функция-помощник для скачивания CSV
+        function fetchCSV(gid) {
+            return new Promise((resolve, reject) => {
+                Papa.parse(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`, {
+                    download: true,
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: results => resolve(results.data),
+                    error: err => reject(err)
+                });
+            });
+        }
 
-        // Загрузка данных прямым скачиванием (без багов Google)
-        function loadData() {
+        // Главная функция загрузки (грузит справочники 1 раз, затем юнитов)
+        async function loadData() {
             document.getElementById('loading').style.display = 'block';
             document.getElementById('unitsGrid').innerHTML = '';
             document.getElementById('error').innerText = '';
 
-            const gid = SHEET_GIDS[currentSheet];
-            // Идеальная ссылка, которая отдает данные байт в байт без искажений
-            const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`;
-
-            Papa.parse(csvUrl, {
-                download: true,
-                header: true,
-                skipEmptyLines: true,
-                complete: function (results) {
-                    document.getElementById('loading').style.display = 'none';
-                    if (results.data && results.data.length > 0) {
-                        allUnits = results.data;
-                        renderCards();
-                    } else {
-                        document.getElementById('error').innerHTML = `Вкладка пуста.`;
-                    }
-                },
-                error: function (err) {
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('error').innerHTML = `Ошибка подключения: ${err.message}`;
+            try {
+                // Если справочники еще пусты - скачиваем их
+                if (Object.keys(dbAbilities).length === 0) {
+                    const abData = await fetchCSV(SHEET_GIDS['Abilities']);
+                    abData.forEach(row => { if (row.Name) dbAbilities[row.Name.trim()] = row; });
                 }
-            });
+                if (Object.keys(dbSkills).length === 0) {
+                    const skData = await fetchCSV(SHEET_GIDS['Skills']);
+                    skData.forEach(row => { if (row.Name) dbSkills[row.Name.trim()] = row; });
+                }
+
+                // Скачиваем текущую фракцию
+                allUnits = await fetchCSV(SHEET_GIDS[currentSheet]);
+                document.getElementById('loading').style.display = 'none';
+                renderCards();
+
+            } catch (err) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').innerHTML = `Ошибка подключения: ${err.message}. Проверьте, вписали ли вы GID для новых вкладок!`;
+            }
         }
 
-        // Отрисовка карточек
+        // Функция-генератор иконок
+        function generateIconHtml(namesStr, database, folder, isRound) {
+            if (!namesStr || namesStr.trim() === '') return '';
+            
+            let html = '';
+            const names = namesStr.split(',').map(s => s.trim()).filter(s => s);
+            const shapeClass = isRound ? 'round' : 'square';
+
+            names.forEach(name => {
+                const data = database[name];
+                
+                if (data) {
+                    // Нашли в базе: формируем картинку и попап
+                    const iconPath = `img/${folder}/${data.Icon}`;
+                    const limitation = (data.Limitation && data.Limitation.trim() !== '') ? `<span class="limitation">${data.Limitation}</span>` : '';
+                    
+                    html += `
+                        <div class="skill-icon ${shapeClass}">
+                            <img src="${iconPath}" alt="${name}">
+                            <div class="tooltip">
+                                <b>${name}</b>
+                                <p>${data.Text}</p>
+                                ${limitation}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Не нашли в базе: выводим красную заглушку с текстом, чтобы вы заметили опечатку
+                    const short = name.substring(0, 3).toUpperCase();
+                    html += `
+                        <div class="skill-icon ${shapeClass}" style="border-color: red;">
+                            ${short}
+                            <div class="tooltip">
+                                <b style="color: red;">${name}</b>
+                                <p>Описание не найдено в справочнике. Проверьте опечатку в таблице.</p>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            return html;
+        }
+
         function renderCards() {
             const gridContainer = document.getElementById('unitsGrid');
             gridContainer.innerHTML = '';
-            gridContainer.className = ''; // убираем старый класс grid
 
             const searchQuery = document.getElementById('searchInput').value.toLowerCase();
             const tierFilter = document.getElementById('tierFilter').value;
 
-            // 1. Сначала фильтруем всех нужных существ
             const filteredUnits = allUnits.filter(unit => {
                 const name = (unit[COLS.name] || '').toLowerCase();
                 const tier = (unit[COLS.tier] || '').toString().trim();
-
                 const matchesSearch = name.includes(searchQuery);
                 const matchesTier = tierFilter === 'all' || tier === tierFilter;
-
                 return matchesSearch && matchesTier && name.length > 0;
             });
 
@@ -330,7 +262,6 @@
                 return;
             }
 
-            // 2. Группируем отфильтрованных существ по Тирам (уровням)
             const unitsByTier = {};
             filteredUnits.forEach(unit => {
                 const t = (unit[COLS.tier] || '?').toString().trim();
@@ -338,71 +269,47 @@
                 unitsByTier[t].push(unit);
             });
 
-            // 3. Сортируем уровни по порядку (1, 2, 3...)
             const sortedTiers = Object.keys(unitsByTier).sort((a, b) => parseInt(a) - parseInt(b));
 
-            // 4. Отрисовываем каждый ряд (каждый Тир)
             sortedTiers.forEach(tier => {
-                // Создаем ряд
                 const tierSection = document.createElement('div');
                 tierSection.className = 'tier-section';
 
-                // Создаем левый блок с большой цифрой
                 const labelContainer = document.createElement('div');
                 labelContainer.className = 'tier-label-container';
                 labelContainer.innerHTML = `<div class="tier-label">${tier}</div>`;
                 tierSection.appendChild(labelContainer);
 
-                // Создаем правый блок (сетку для карточек этого уровня)
                 const tierCards = document.createElement('div');
                 tierCards.className = 'tier-cards';
 
-                // Добавляем карточки в этот ряд
                 unitsByTier[tier].forEach(unit => {
                     const card = document.createElement('div');
                     card.className = 'card';
 
-                    let abilitiesHtml = '';
-                    const absStr = unit[COLS.abilities];
-                    if (absStr) {
-                        const absArray = absStr.split(',').map(s => s.trim()).filter(s => s);
-                        absArray.forEach(ab => {
-                            const shortIcon = ab.substring(0, 2).toUpperCase();
-                            const desc = ABILITIES_DB[ab] || "Описание отсутствует.";
-                            abilitiesHtml += `
-                                <div class="ability-icon">
-                                    ${shortIcon}
-                                    <div class="tooltip"><b>${ab}</b>${desc}</div>
-                                </div>
-                            `;
-                        });
-                    }
+                    // --- ГЕНЕРАЦИЯ ИКОНОК ---
+                    // Активные скиллы (КВАДРАТНЫЕ, из папки img/skills)
+                    const skillsHtml = generateIconHtml(unit[COLS.skills], dbSkills, 'skills', false);
+                    
+                    // Пассивные навыки (КРУГЛЫЕ, из папки img/abilities)
+                    const abilitiesHtml = generateIconHtml(unit[COLS.abilities], dbAbilities, 'abilities', true);
+                    // ------------------------
 
-                    // Формируем путь к картинке
                     let imgUrl = 'https://via.placeholder.com/300x180/221f1c/cfac4b?text=Olden+Era';
                     const imageName = unit[COLS.image];
                     if (imageName && imageName.trim() !== '') {
                         imgUrl = 'img/' + imageName.trim();
                     }
 
-                    // --- ПОДСЧЕТ УРОНА ---
                     let minD = parseInt(unit[COLS.damageMin]) || 0;
                     let maxD = parseInt(unit[COLS.damageMax]) || 0;
-                    
-                    // Считаем среднее
                     let avgD = (minD + maxD) / 2;
                     let avgStr = Number.isInteger(avgD) ? avgD : avgD.toFixed(1); 
-                    
-                    // Формируем разброс (если урон 2-4, пишем 2-4. Если стабильный 5 и 5, пишем просто 5)
                     let damageRange = (minD === maxD) ? minD : `${minD}-${maxD}`;
-                    // ---------------------
 
-                    // Формируем саму карточку
-                    // Формируем саму карточку с новым дизайном (Сплит картинки и статов)
-                    // Формируем саму карточку с обновленным дизайном
                     card.innerHTML = `
                         <div style="padding: 12px 10px; background-color: #1c1a18; border-bottom: 1px solid var(--border-color);">
-                            <h2 class="card-title" style="margin: 0; font-size: 20px;">${unit[COLS.name] || 'Без названия'}</h2>
+                            <h2 class="card-title" style="margin: 0; font-size: 20px; text-align: center;">${unit[COLS.name] || 'Без названия'}</h2>
                         </div>
 
                         <div class="card-top-section">
@@ -429,7 +336,8 @@
                                 <div class="stat"><span class="stat-label">Новый</span> <span class="stat-value">-</span></div>
                             </div>
 
-                            <div class="abilities">
+                            <div class="skills-container">
+                                ${skillsHtml}
                                 ${abilitiesHtml}
                             </div>
                         </div>
